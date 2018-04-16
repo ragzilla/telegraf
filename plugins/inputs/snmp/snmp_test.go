@@ -670,8 +670,8 @@ func TestFieldConvert(t *testing.T) {
 		{uint16(123), "float(3)", float64(0.123)},
 		{uint32(123), "float(3)", float64(0.123)},
 		{uint64(123), "float(3)", float64(0.123)},
-		{"123", "int", int64(123)},
-		{[]byte("123"), "int", int64(123)},
+		{"123", "int", int(123)},
+		{[]byte("123"), "int", int(123)},
 		{float32(12.3), "int", int64(12)},
 		{float64(12.3), "int", int64(12)},
 		{int(123), "int", int64(123)},
@@ -696,7 +696,32 @@ func TestFieldConvert(t *testing.T) {
 		if !assert.NoError(t, err, "input=%T(%v) conv=%s expected=%T(%v)", tc.input, tc.input, tc.conv, tc.expected, tc.expected) {
 			continue
 		}
-		assert.EqualValues(t, tc.expected, act, "input=%T(%v) conv=%s expected=%T(%v)", tc.input, tc.input, tc.conv, tc.expected, tc.expected)
+		assert.Equal(t, tc.expected, act, "input=%T(%v) conv=%s expected=%T(%v)", tc.input, tc.input, tc.conv, tc.expected, tc.expected)
+	}
+}
+
+func TestUintFieldConvert(t *testing.T) {
+	testTable := []struct {
+		input    interface{}
+		conv     string
+		expected interface{}
+	}{
+		{uint(123), "int", uint64(123)},
+		{uint8(123), "int", uint64(123)},
+		{uint16(123), "int", uint64(123)},
+		{uint32(123), "int", uint64(123)},
+		{uint64(123), "int", uint64(123)},
+	}
+
+	// enable Uint support
+	enableUint = true
+
+	for _, tc := range testTable {
+		act, err := fieldConvert(tc.conv, tc.input)
+		if !assert.NoError(t, err, "input=%T(%v) conv=%s expected=%T(%v)", tc.input, tc.input, tc.conv, tc.expected, tc.expected) {
+			continue
+		}
+		assert.Equal(t, tc.expected, act, "input=%T(%v) conv=%s expected=%T(%v)", tc.input, tc.input, tc.conv, tc.expected, tc.expected)
 	}
 }
 

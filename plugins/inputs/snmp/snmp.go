@@ -35,6 +35,9 @@ const sampleConfig = `
   ## The GETBULK max-repetitions parameter
   max_repetitions = 10
 
+  ## Enable Uint support- defaults to False
+  # enable_uint = true
+
   ## SNMPv3 auth parameters
   #sec_name = "myuser"
   #auth_protocol = "md5"      # Values: "MD5", "SHA", ""
@@ -113,6 +116,9 @@ type Snmp struct {
 	// Parameters for Version 2 & 3
 	MaxRepetitions uint8
 
+	// Enable Uint support
+	EnableUint bool
+
 	// Parameters for Version 3
 	ContextName string
 	// Values: "noAuthNoPriv", "authNoPriv", "authPriv"
@@ -140,6 +146,9 @@ type Snmp struct {
 	initialized     bool
 }
 
+// enableUint so fieldConvert can access this at runtime
+var enableUint = false
+
 func (s *Snmp) init() error {
 	if s.initialized {
 		return nil
@@ -158,6 +167,8 @@ func (s *Snmp) init() error {
 			return Errorf(err, "initializing field %s", s.Fields[i].Name)
 		}
 	}
+
+	enableUint = s.EnableUint
 
 	s.initialized = true
 	return nil
@@ -748,6 +759,21 @@ func fieldConvert(conv string, v interface{}) (interface{}, error) {
 			v = vf / math.Pow10(d)
 		}
 		return v, nil
+	}
+
+	if enableUint && conv == "int" {
+		switch vt := v.(type) {
+		case uint:
+			return uint64(vt), nil
+		case uint8:
+			return uint64(vt), nil
+		case uint16:
+			return uint64(vt), nil
+		case uint32:
+			return uint64(vt), nil
+		case uint64:
+			return uint64(vt), nil
+		}
 	}
 
 	if conv == "int" {

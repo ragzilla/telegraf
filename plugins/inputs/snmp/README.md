@@ -109,6 +109,9 @@ SNMP community to use.
 * `max_repetitions`: Default: `50`
 Maximum number of iterations for repeating variables.
 
+* `enable_uint`: Default: false
+Enable unsigned integer support when converting fields.
+
 * `sec_name`:
 Security name for authenticated SNMPv3 requests.
 
